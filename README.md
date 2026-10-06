@@ -62,6 +62,16 @@ A Vercel é bem mais rápida que o plano gratuito do Render, porque o site não 
 Os arquivos de tela (`style.css`, `app.js`, `admin.js`) ficam na pasta `public/`, que a Vercel serve
 direto pela CDN. O limite de tentativas de login fica no banco, porque a Vercel usa várias instâncias.
 
+### Instalar no tablet (PWA)
+
+O site é um PWA: instalado, ele abre em tela cheia, sem a barra do navegador, com ícone próprio.
+
+- **Android (Chrome):** abra o endereço, menu **⋮ > Instalar app** (ou **Adicionar à tela inicial**).
+- **iPad (Safari):** botão de compartilhar > **Adicionar à Tela de Início**.
+
+Precisa de **https** (a Vercel já entrega). O app guarda só a tela e os arquivos para abrir rápido:
+**votos e resultado sempre precisam de internet**, e sem conexão aparece a tela "Sem conexão".
+Em tablet de urna, deixe o Wi-Fi estável e a tela sempre ligada (desative o descanso de tela).
 ## 3b. Colocar no ar (Render, alternativa)
 
 1. Suba o projeto para um repositório no GitHub (sem o `.env`).
