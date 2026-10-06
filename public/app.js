@@ -104,6 +104,21 @@ function setup(){
 }
 async function sair(){await api("/api/admin/sair","POST");R=null;await carregar()}
 
+/* ---------- INSTALAR COMO APP (PWA) ---------- */
+let instalar=null;   // evento guardado do navegador (só existe se ele permitir instalar)
+const jaInstalado=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone;
+const ehIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const redesenharLogin=()=>{if(view==="login"&&!$("u").value&&!$("p").value)login()};
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();instalar=e;redesenharLogin()});
+window.addEventListener("appinstalled",()=>{instalar=null;redesenharLogin()});
+function blocoInstalar(){
+  if(jaInstalado())return "";
+  if(instalar)return `<button class="btn sec" id="inst">Instalar app neste aparelho</button>`;
+  return `<div class="note">Para instalar como app: ${ehIOS()
+    ?"toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>."
+    :"abra o menu do navegador (<b>⋮</b>) e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>."}</div>`;
+}
+
 /* ---------- LOGIN DO MESÁRIO ---------- */
 function login(){
   $("app").innerHTML=`<div class="card"><h1>Área do mesário</h1>
@@ -114,7 +129,13 @@ function login(){
   <input type="password" id="p" autocomplete="current-password" aria-label="Senha">
   ${err?`<div class="err">${esc(err)}</div>`:""}
   <button class="btn" id="ok">Entrar</button>
-  ${E.urna_liberada&&E.chapas.length?`<button class="btn sec" id="vt">Voltar à votação</button>`:""}</div>`;
+  ${E.urna_liberada&&E.chapas.length?`<button class="btn sec" id="vt">Voltar à votação</button>`:""}
+  ${blocoInstalar()}</div>`;
+  if($("inst"))$("inst").onclick=async()=>{
+    const ev=instalar;instalar=null;
+    try{await ev.prompt();await ev.userChoice}catch(e){}
+    login();
+  };
   $("ok").onclick=async()=>{
     const r=await api("/api/login","POST",{usuario:$("u").value,senha:$("p").value});
     if(!r.ok){err=r.erro||"Usuário ou senha incorretos.";return login()}
