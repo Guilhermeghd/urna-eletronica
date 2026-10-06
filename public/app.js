@@ -104,6 +104,24 @@ function setup(){
 }
 async function sair(){await api("/api/admin/sair","POST");R=null;await carregar()}
 
+/* ---------- TELA CHEIA (sem instalar nada; precisa de um toque do usuário) ---------- */
+const emTelaCheia=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const telaCheiaOk=()=>{const el=document.documentElement;return !!(el.requestFullscreen||el.webkitRequestFullscreen)};
+const rotuloTelaCheia=()=>emTelaCheia()?"Sair da tela cheia":"Tela cheia";
+function alternarTelaCheia(){
+  try{
+    const d=document,el=d.documentElement;
+    const r=emTelaCheia()?(d.exitFullscreen||d.webkitExitFullscreen).call(d):(el.requestFullscreen||el.webkitRequestFullscreen).call(el);
+    if(r&&r.catch)r.catch(()=>{});
+  }catch(e){}
+}
+function botaoTelaCheia(cls,id){
+  return telaCheiaOk()&&!jaInstalado()?`<button class="${cls}" id="${id}" data-fs>${rotuloTelaCheia()}</button>`:"";
+}
+function ligarTelaCheia(id){if($(id))$(id).onclick=alternarTelaCheia}
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>
+  document.querySelectorAll("[data-fs]").forEach(b=>b.textContent=rotuloTelaCheia())));
+
 /* ---------- INSTALAR COMO APP (PWA) ---------- */
 let instalar=null;   // evento guardado do navegador (só existe se ele permitir instalar)
 const jaInstalado=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone;
@@ -130,7 +148,9 @@ function login(){
   ${err?`<div class="err">${esc(err)}</div>`:""}
   <button class="btn" id="ok">Entrar</button>
   ${E.urna_liberada&&E.chapas.length?`<button class="btn sec" id="vt">Voltar à votação</button>`:""}
+  ${botaoTelaCheia("btn sec","fsl")}
   ${blocoInstalar()}</div>`;
+  ligarTelaCheia("fsl");
   if($("inst"))$("inst").onclick=async()=>{
     const ev=instalar;instalar=null;
     try{await ev.prompt();await ev.userChoice}catch(e){}
@@ -170,7 +190,8 @@ function vote(){
   <div class="rod">Aperte CONFIRMA para votar<br>CORRIGE para voltar e digitar de novo</div></div>
   <div class="pad"><div class="grid">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="k" data-d="${n}">${n}</button>`).join("")}<button class="k z" data-d="0">0</button></div>
   <div class="act"><button class="k b" id="kb">BRANCO</button><button class="k c" id="kc">CORRIGE</button><button class="k g" id="kg">CONFIRMA</button></div></div></div>
-  <button class="mes" id="mes">Mesário</button>`;
+  <div class="barra">${botaoTelaCheia("mes","fs")}<button class="mes" id="mes">Mesário</button></div>`;
+  ligarTelaCheia("fs");
   document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>press(b.dataset.d));
   $("kb").onclick=branco;$("kc").onclick=corrige;$("kg").onclick=confirma;
   $("mes").onclick=()=>{clearTimeout(doneTimer);done=false;digits="";blank=false;aviso="";err="";view="login";render()};
