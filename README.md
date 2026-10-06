@@ -45,7 +45,24 @@ Se o painel mostrar as credenciais separadas (`PGHOST`, `PGUSER`, `PGPASSWORD`..
 
 > O `.env` tem senhas. Ele já está no `.gitignore`: não suba para o GitHub.
 
-## 3. Colocar no ar (Render, plano gratuito)
+## 3. Colocar no ar (Vercel, recomendado)
+
+A Vercel é bem mais rápida que o plano gratuito do Render, porque o site não "dorme" por minutos.
+
+1. Suba o projeto para o GitHub (sem o `.env`).
+2. Em https://vercel.com: **Add New > Project**, importe o repositório. Ela detecta o Flask sozinha
+   (o `app.py` tem a variável `app`). Não precisa de Build Command nem de Start Command.
+3. Em **Environment Variables**, adicione:
+   - `DATABASE_URL` = a string do Neon (use o endereço com `-pooler`)
+   - `SECRET_KEY` = a chave gerada
+   - `COOKIE_SECURE` = `1`
+   - `ADMIN_USER` e `ADMIN_PASSWORD` = login do painel `/admin` (use uma senha forte)
+4. **Deploy**. Você ganha um endereço `https://seu-app.vercel.app`.
+
+Os arquivos de tela (`style.css`, `app.js`, `admin.js`) ficam na pasta `public/`, que a Vercel serve
+direto pela CDN. O limite de tentativas de login fica no banco, porque a Vercel usa várias instâncias.
+
+## 3b. Colocar no ar (Render, alternativa)
 
 1. Suba o projeto para um repositório no GitHub (sem o `.env`).
 2. No https://render.com: **New > Web Service**, escolha o repositório.
@@ -101,9 +118,9 @@ O administrador **não** vê votos nem resultados.
 ```
 app.py              API + regras (Flask, SQLAlchemy)
 templates/index.html  templates/admin.html
-static/app.js       tela da urna e do mesário
-static/admin.js     painel do administrador (/admin)
-static/style.css
+public/app.js       tela da urna e do mesário
+public/admin.js     painel do administrador (/admin)
+public/style.css
 requirements.txt    dependências
 Procfile            comando de inicialização (Render/Heroku)
 .env.example        modelo das variáveis (copie para .env)

@@ -41,7 +41,8 @@ def _database_url() -> str:
     return url
 
 
-app = Flask(__name__)
+# Arquivos estáticos ficam em public/: na Vercel o CDN serve essa pasta; localmente o Flask serve.
+app = Flask(__name__, static_folder="public", static_url_path="")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)  # atrás de proxy (Render etc.)
 app.config.update(
     SQLALCHEMY_DATABASE_URI=_database_url(),
@@ -93,6 +94,14 @@ class Chapa(db.Model):
 
     def to_dict(self):
         return {"n": self.numero, "name": self.nome, "img": self.img or ""}
+
+
+class Tentativa(db.Model):
+    """Falhas de login por IP. No banco (e não na memória) porque a Vercel usa várias instâncias."""
+    __tablename__ = "tentativas"
+    chave = db.Column(db.String(80), primary_key=True)
+    n = db.Column(db.Integer, nullable=False, default=0)
+    t0 = db.Column(db.Float, nullable=False)
 
 
 class Voto(db.Model):
@@ -201,22 +210,37 @@ def dono_required(f):
     return wrapper
 
 
-# limite simples de tentativas de login por IP (por processo)
-_falhas = {}
+# limite de tentativas de login por IP (guardado no banco)
 MAX_FALHAS, JANELA = 5, 300
 
 
-def _bloqueado(ip):
-    n, t0 = _falhas.get(ip, (0, 0))
-    if time.time() - t0 > JANELA:
-        _falhas.pop(ip, None)
+def _bloqueado(chave):
+    t = db.session.get(Tentativa, chave)
+    if not t:
         return False
-    return n >= MAX_FALHAS
+    if time.time() - t.t0 > JANELA:
+        db.session.delete(t)
+        db.session.commit()
+        return False
+    return t.n >= MAX_FALHAS
 
 
-def _registrar_falha(ip):
-    n, t0 = _falhas.get(ip, (0, time.time()))
-    _falhas[ip] = (n + 1, t0)
+def _registrar_falha(chave):
+    t = db.session.get(Tentativa, chave)
+    if t and time.time() - t.t0 <= JANELA:
+        t.n += 1
+    elif t:
+        t.n, t.t0 = 1, time.time()
+    else:
+        db.session.add(Tentativa(chave=chave, n=1, t0=time.time()))
+    db.session.commit()
+
+
+def _limpar_falhas(chave):
+    t = db.session.get(Tentativa, chave)
+    if t:
+        db.session.delete(t)
+        db.session.commit()
 
 
 def apuracao(e):
@@ -302,7 +326,7 @@ def login():
     if not m or not m.ativo or not check_password_hash(m.senha_hash, str(d.get("senha", ""))):
         _registrar_falha(ip)
         return erro("Usuário ou senha incorretos.", 401)
-    _falhas.pop(ip, None)
+    _limpar_falhas(ip)
     entrar_mesario(m)
     return jsonify(ok=True)
 
@@ -461,7 +485,7 @@ def dono_login():
     if not (ok_u and ok_s):
         _registrar_falha(ip)
         return erro("Usuário ou senha incorretos.", 401)
-    _falhas.pop(ip, None)
+    _limpar_falhas(ip)
     session["dono"] = {"t": time.time()}
     session.permanent = True
     return jsonify(ok=True)
