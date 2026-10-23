@@ -343,11 +343,13 @@ function tabResultado(){
 function boletim(){
   const d=new Date().toLocaleString("pt-BR");
   return `<div id="boletim"><h1>${esc(R.titulo)}</h1><div class="sub">Boletim de resultado - emitido em ${d}</div>
-  <table><tr><th>Chapa</th><th>Votos</th></tr>
-  ${R.chapas.map(r=>`<tr><td>${esc(r.n)} - ${esc(r.name)}</td><td>${r.v}</td></tr>`).join("")}
-  <tr><td>Votos em branco</td><td>${R.branco}</td></tr><tr><td>Votos nulos</td><td>${R.nulo}</td></tr>
-  <tr class="tot"><td>Total de votos</td><td>${R.total}</td></tr></table>
-  <div class="assin"><div>Mesário</div><div>Presidente da comissão</div></div></div>`;
+  ${R.chapas.map(r=>`<div class="cha"><div class="foto">${r.img?`<img src="${esc(r.img)}" alt="">`:""}</div>
+    <div class="dados"><div class="nome">Chapa ${esc(r.n)} - ${esc(r.name)}</div>
+    <table><tr><th>Votos recebidos</th><td>${r.v}</td></tr>
+    <tr><th>% dos votos</th><td>${R.total?(r.v/R.total*100).toFixed(1).replace(".",","):"0,0"}%</td></tr></table></div></div>`).join("")}
+  <table class="resumo"><tr><th>Votos em branco</th><td>${R.branco}</td></tr><tr><th>Votos nulos</th><td>${R.nulo}</td></tr>
+  <tr class="tot"><th>Total de votos</th><td>${R.total}</td></tr></table>
+  <div class="assin"><div>Presidente do Grêmio</div><div>Comissão Eleitoral</div><div>Mesário</div></div></div>`;
 }
 function bindResultado(){
   $("pr").onclick=()=>{try{window.print()}catch(e){alert("Use Ctrl+P para imprimir.")}};

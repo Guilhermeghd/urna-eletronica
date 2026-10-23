@@ -84,15 +84,23 @@ table{width:100%;border-collapse:collapse;margin-top:10px}td,th{padding:8px;bord
 @media print{
   body{background:#fff!important;color:#000!important;display:block;padding:0}
   #app>*{display:none!important}
-  #app #boletim{display:block!important}
-  #boletim{font-family:Arial,sans-serif;color:#000;padding:10mm}
+  @page{size:A4;margin:10mm}
+  #app{width:100%!important;max-width:none!important;padding:0!important;margin:0!important;box-shadow:none!important;background:none!important}
+  #app #boletim{display:flex!important;flex-direction:column;height:272mm;width:100%;box-sizing:border-box;font-family:Arial,sans-serif;color:#000;padding:0}
   #boletim h1{font-size:20pt;margin:0 0 2pt}
-  #boletim .sub{font-size:11pt;margin:0 0 14pt;color:#333}
-  #boletim table{width:100%;border-collapse:collapse;font-size:12pt}
-  #boletim th,#boletim td{border:1px solid #000;padding:6pt 8pt;text-align:left}
-  #boletim td:last-child,#boletim th:last-child{text-align:right;width:25%}
-  #boletim tr.tot td{font-weight:700}
-  #boletim .assin{display:flex;gap:30pt;margin-top:60pt}
+  #boletim .sub{font-size:11pt;margin:0 0 16pt;color:#333}
+  #boletim table{border-collapse:collapse;font-size:12pt;width:100%}
+  #boletim th,#boletim td{border:1px solid #000;padding:8pt 10pt}
+  #boletim th{text-align:left;font-weight:600}
+  #boletim td{text-align:right;width:25%;font-weight:700}
+  #boletim .cha{display:flex;gap:16pt;align-items:flex-start;margin-bottom:16pt;break-inside:avoid}
+  #boletim .foto{width:40mm;height:52mm;border:2px solid #000;flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #boletim .foto img{width:100%;height:100%;object-fit:cover}
+  #boletim .dados{flex:1}
+  #boletim .nome{font-size:16pt;font-weight:700;margin:0 0 10pt}
+  #boletim .resumo{margin-top:4pt}
+  #boletim tr.tot th,#boletim tr.tot td{font-size:13pt;font-weight:700}
+  #boletim .assin{display:flex;gap:20pt;margin-top:auto;padding-top:40pt}
   #boletim .assin div{flex:1;border-top:1px solid #000;padding-top:4pt;font-size:10pt;text-align:center}
 }
 .aviso{color:#b3261e;font-weight:700;font-size:.9rem;margin-top:8px}

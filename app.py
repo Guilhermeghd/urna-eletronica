@@ -251,7 +251,7 @@ def apuracao(e):
     )
     branco = Voto.query.filter_by(eleicao_id=e.id, tipo="branco").count()
     nulo = Voto.query.filter_by(eleicao_id=e.id, tipo="nulo").count()
-    chapas = [{"n": c.numero, "name": c.nome, "v": contagem.get(c.numero, 0)} for c in chapas_de(e)]
+    chapas = [{"n": c.numero, "name": c.nome, "img": c.img or "", "v": contagem.get(c.numero, 0)} for c in chapas_de(e)]
     total = sum(c["v"] for c in chapas) + branco + nulo
     return {"titulo": e.titulo, "chapas": chapas, "branco": branco, "nulo": nulo, "total": total}
 
