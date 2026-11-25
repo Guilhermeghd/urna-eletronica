@@ -126,7 +126,14 @@ O administrador **não** vê votos nem resultados.
 ## Estrutura
 
 ```
-app.py              API + regras (Flask, SQLAlchemy)
+app.py              ponto de entrada (gunicorn app:app)
+urna/__init__.py    create_app() (application factory)
+urna/config.py      configuração e variáveis de ambiente
+urna/extensions.py  instância do SQLAlchemy
+urna/models.py      tabelas e migração
+urna/auth.py        sessões, decoradores e limite de tentativas
+urna/services.py    regras e consultas (apuração, validação)
+urna/routes/        blueprints: urna.py (eleitor), mesario.py, dono.py (/admin)
 templates/index.html  templates/admin.html
 public/app.js       tela da urna e do mesário
 public/admin.js     painel do administrador (/admin)
